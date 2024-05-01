@@ -11,12 +11,15 @@ import me.srrapero720.watermedia.api.image.ImageAPI;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderers;
 import net.minecraft.client.renderer.texture.AbstractTexture;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.*;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.event.BuildCreativeModeTabContentsEvent;
 import net.minecraftforge.client.event.EntityRenderersEvent;
 import net.minecraftforge.client.event.RegisterClientCommandsEvent;
 import net.minecraftforge.event.RegisterCommandsEvent;
@@ -38,12 +41,10 @@ import static me.srrapero720.watermedia.WaterMedia.IT;
 
 @Mod.EventBusSubscriber(modid = ID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class WFRegistry {
+    public static final DeferredRegister<CreativeModeTab> TABS = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, ID);
     public static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, ID);
     public static final DeferredRegister<Block> BLOCKS =  DeferredRegister.create(ForgeRegistries.BLOCKS, ID);
     public static final DeferredRegister<BlockEntityType<?>> TILES = DeferredRegister.create(ForgeRegistries.BLOCK_ENTITY_TYPES, ID);
-    public static final CreativeModeTab TAB = new CreativeModeTab(ID) {
-        @Override public ItemStack makeIcon() { return new ItemStack(FRAME_ITEM.get()); }
-    };
 
     /* BLOCKS */
     public static final RegistryObject<DisplayBlock>
@@ -56,7 +57,7 @@ public class WFRegistry {
 
     /* ITEMS */
     public static final RegistryObject<Item>
-            REMOTE_ITEM = ITEMS.register("remote", () -> new RemoteControl(new Item.Properties().tab(TAB))),
+            REMOTE_ITEM = ITEMS.register("remote", () -> new RemoteControl(new Item.Properties())),
             FRAME_ITEM = ITEMS.register("frame", () -> new BlockItem(FRAME.get(), prop())),
             PROJECTOR_ITEM = ITEMS.register("projector", () -> new BlockItem(PROJECTOR.get(), prop())),
             TV_ITEM = ITEMS.register("tv", () -> new BlockItem(TV.get(), prop())),
@@ -73,18 +74,26 @@ public class WFRegistry {
             TILE_TV_BOX = tile("tv_box", TVBoxTile::new, TV_BOX);
 //            TILE_GOLDEN_PROJECTOR = tile("golden_projector", ProjectorTile::new, GOLDEN_PROJECTOR);
 
+    /* TABS */
+    public static final RegistryObject<CreativeModeTab> WATERTAB = TABS.register("tab", () -> new CreativeModeTab.Builder(CreativeModeTab.Row.TOP, 0)
+            .icon(() -> new ItemStack(FRAME.get()))
+            .title(Component.translatable("itemGroup.waterframes"))
+            .build()
+    );
+
     private static RegistryObject<BlockEntityType<DisplayTile>> tile(String name, BlockEntityType.BlockEntitySupplier<DisplayTile> creator, Supplier<DisplayBlock> block) {
         return TILES.register(name, () -> BlockEntityType.Builder.of(creator, block.get()).build(null));
     }
 
     private static Item.Properties prop() {
-        return new Item.Properties().stacksTo(16).tab(TAB).rarity(Rarity.EPIC);
+        return new Item.Properties().stacksTo(16).rarity(Rarity.EPIC);
     }
 
     public static void init(IEventBus bus) {
         BLOCKS.register(bus);
         ITEMS.register(bus);
         TILES.register(bus);
+        TABS.register(bus);
     }
 
     @SubscribeEvent
@@ -118,6 +127,18 @@ public class WFRegistry {
 
     @Mod.EventBusSubscriber(modid = WaterFrames.ID, bus = Mod.EventBusSubscriber.Bus.MOD)
     public static class ModEvents {
+        @SubscribeEvent
+        public static void onCreativeTabsLoading(BuildCreativeModeTabContentsEvent event) {
+            if (event.getTabKey() == WATERTAB.getKey()) {
+                event.accept(REMOTE_ITEM, CreativeModeTab.TabVisibility.PARENT_AND_SEARCH_TABS);
+                event.accept(FRAME_ITEM, CreativeModeTab.TabVisibility.PARENT_AND_SEARCH_TABS);
+                event.accept(PROJECTOR_ITEM, CreativeModeTab.TabVisibility.PARENT_AND_SEARCH_TABS);
+                event.accept(TV_ITEM, CreativeModeTab.TabVisibility.PARENT_AND_SEARCH_TABS);
+                event.accept(BIG_TV_ITEM, CreativeModeTab.TabVisibility.PARENT_AND_SEARCH_TABS);
+                event.accept(TV_BOX_ITEM, CreativeModeTab.TabVisibility.PARENT_AND_SEARCH_TABS);
+            }
+        }
+
         @SubscribeEvent
         public static void init(FMLCommonSetupEvent event) {
             NET.registerType(DataSyncPacket.class, DataSyncPacket::new);
