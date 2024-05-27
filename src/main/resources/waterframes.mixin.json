@@ -11,8 +11,10 @@
     "vp.VideoPlayerMixin"
   ],
   "mixins": [
+    "ArgumentTypeMixin",
     "MinecraftServerMixin",
     "PlayerListMixin",
+    "RedstoneWireBlockMixin",
     "creativecore.CompiledTextMixin",
     "creativecore.GuiLabelMixin",
     "creativecore.GuiSliderMixin"

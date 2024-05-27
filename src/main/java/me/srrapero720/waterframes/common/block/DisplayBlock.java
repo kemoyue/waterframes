@@ -5,6 +5,7 @@ import me.srrapero720.waterframes.common.block.entity.DisplayTile;
 import me.srrapero720.waterframes.common.network.DisplayNetwork;
 import me.srrapero720.waterframes.common.network.packets.PermLevelPacket;
 import me.srrapero720.waterframes.common.screens.DisplayScreen;
+import net.fabricmc.fabric.api.object.builder.v1.block.FabricBlockSettings;
 import net.minecraft.FieldsAreNonnullByDefault;
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.core.BlockPos;
@@ -31,6 +32,8 @@ import team.creative.creativecore.common.gui.GuiLayer;
 import team.creative.creativecore.common.gui.creator.BlockGuiCreator;
 import team.creative.creativecore.common.gui.creator.GuiCreator;
 
+import java.util.function.ToIntFunction;
+
 @SuppressWarnings("deprecation")
 @MethodsReturnNonnullByDefault
 @FieldsAreNonnullByDefault
@@ -41,13 +44,15 @@ public abstract class DisplayBlock extends BaseEntityBlock implements BlockGuiCr
     public static final BooleanProperty LIT = BlockStateProperties.LIT;
     public static final BooleanProperty VISIBLE = new BooleanProperty("frame"){};
     public static final DirectionProperty ATTACHED_FACE = DirectionProperty.create("attached_face", Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST, Direction.UP, Direction.DOWN);
-    private static final Properties PROPERTIES = Properties.of()
+    private static final Properties PROPERTIES = FabricBlockSettings.create()
+            .luminance(value -> ((DisplayBlock) value.getBlock()).getLightEmission(value))
             .strength(1f)
             .sound(SoundType.METAL)
             .noOcclusion()
             .forceSolidOff()
             .isSuffocating(Blocks::never)
             .isViewBlocking(Blocks::never)
+            .pushReaction(PushReaction.DESTROY)
             .requiresCorrectToolForDrops();
 
     protected DisplayBlock() {
@@ -77,7 +82,7 @@ public abstract class DisplayBlock extends BaseEntityBlock implements BlockGuiCr
         return InteractionResult.SUCCESS;
     }
 
-    @Override public boolean canConnectRedstone(BlockState state, BlockGetter level, BlockPos pos, Direction direction) {
+    public boolean canConnectRedstone(BlockState state, BlockGetter level, BlockPos pos, Direction direction) {
         return state.getValue(this.getFacing()) == direction;
     }
 
@@ -123,6 +128,7 @@ public abstract class DisplayBlock extends BaseEntityBlock implements BlockGuiCr
     @Override public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState blockState, BlockEntityType<T> type) {
         return (l, pos, state, be) -> {
             if (be instanceof DisplayTile tile) {
+                tile.setLevel(l);
                 tile.tick(tile.getBlockPos(), state);
             }
         };
@@ -147,9 +153,9 @@ public abstract class DisplayBlock extends BaseEntityBlock implements BlockGuiCr
         return state.getValue(POWER);
     }
 
-    @Override public int getLightEmission(BlockState state, BlockGetter level, BlockPos pos) {
+    public int getLightEmission(BlockState state) {
         if (state.getValue(LIT)) {
-            return level.getMaxLightLevel();
+            return 15;
             // TODO: this needs be synchronized on data refresh
 //            if (level.getBlockEntity(pos) instanceof DisplayTile tile) {
 //                return (tile.data.brightness / 255) * level.getMaxLightLevel();
@@ -163,16 +169,8 @@ public abstract class DisplayBlock extends BaseEntityBlock implements BlockGuiCr
         return 0f;
     }
 
-    @Override public PushReaction getPistonPushReaction(BlockState pState) {
-        return PushReaction.DESTROY;
-    }
-
     @Override public FluidState getFluidState(BlockState state) {
         return state.getValue(WATERLOGGED) ? Fluids.WATER.getSource(true) : super.getFluidState(state);
-    }
-
-    @Override public BlockState rotate(BlockState state, LevelAccessor world, BlockPos pos, Rotation rotation) {
-        return this.rotate(state, rotation);
     }
 
     @Override public BlockState rotate(BlockState state, Rotation rotation) {

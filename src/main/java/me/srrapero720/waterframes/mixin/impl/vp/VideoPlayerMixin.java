@@ -1,7 +1,7 @@
 package me.srrapero720.waterframes.mixin.impl.vp;
 
-import com.github.NGoedix.watchvideo.block.entity.custom.TVBlockEntity;
-import com.github.NGoedix.watchvideo.util.displayers.IDisplay;
+import com.github.NGoedix.videoplayer.block.entity.custom.TVBlockEntity;
+import com.github.NGoedix.videoplayer.util.displayers.IDisplay;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;

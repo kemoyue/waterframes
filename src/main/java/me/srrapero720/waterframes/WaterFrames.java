@@ -1,17 +1,16 @@
 package me.srrapero720.waterframes;
 
+import me.srrapero720.waterframes.common.block.entity.DisplayTile;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+import net.fabricmc.api.ModInitializer;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import net.minecraftforge.fml.loading.FMLLoader;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-@Mod(WaterFrames.ID)
-public class WaterFrames {
+public class WaterFrames implements ModInitializer {
     // TOOLS
     public static final String ID = "waterframes";
     public static final String NAME = "WATERFrAMES";
@@ -20,19 +19,20 @@ public class WaterFrames {
     public static final long SYNC_TIME = 1000L;
     private static int SERVER_OP_LEVEL = -1;
 
-    // BOOTSTRAP
-    public WaterFrames() {
+    @Override
+    public void onInitialize() {
         WFConfig.init();
-        WFRegistry.init(FMLJavaModLoadingContext.get().getModEventBus());
+        WFRegistry.init();
+        DisplayTile.initCommon();
     }
 
     public static boolean isInstalled(String modId) {
-        return FMLLoader.getLoadingModList().getModFileById(modId) != null;
+        return FabricLoader.getInstance().isModLoaded(modId);
     }
 
     public static boolean isInstalled(String... mods) {
         for (String id: mods) {
-            if (FMLLoader.getLoadingModList().getModFileById(id) == null) {
+            if (FabricLoader.getInstance().isModLoaded(id)) {
                 return false;
             }
         }
@@ -50,6 +50,6 @@ public class WaterFrames {
         SERVER_OP_LEVEL = level;
     }
 
-    @OnlyIn(Dist.CLIENT)
+    @Environment(EnvType.CLIENT)
     public static float deltaFrames() { return Minecraft.getInstance().isPaused() ? 1.0F : Minecraft.getInstance().getFrameTime(); }
 }

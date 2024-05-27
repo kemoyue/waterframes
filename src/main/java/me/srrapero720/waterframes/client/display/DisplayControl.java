@@ -1,18 +1,13 @@
 package me.srrapero720.waterframes.client.display;
 
-import me.srrapero720.waterframes.WaterFrames;
-import net.minecraft.world.level.LevelAccessor;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.event.level.LevelEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
+import net.minecraft.world.level.Level;
 import org.apache.logging.log4j.Marker;
 import org.apache.logging.log4j.MarkerManager;
 
-@Mod.EventBusSubscriber(value = Dist.CLIENT, modid = WaterFrames.ID, bus = Mod.EventBusSubscriber.Bus.FORGE)
-@OnlyIn(Dist.CLIENT)
+@Environment(EnvType.CLIENT)
 public class DisplayControl {
     private static final Marker IT = MarkerManager.getMarker("DisplayControl");
     public static final Integer DEFAULT_SIZE = 32;
@@ -104,15 +99,14 @@ public class DisplayControl {
 
     public static long getTicks() { return ticks; }
 
-    @SubscribeEvent
-    public static void onUnloadingLevel(LevelEvent.Unload event) {
-        LevelAccessor level = event.getLevel();
-        if (level != null && level.isClientSide()) DisplayControl.release();
+    static {
+        ClientTickEvents.END_CLIENT_TICK.register(client -> {
+            DisplayControl.tick();
+        });
     }
 
-    @SubscribeEvent
-    public static void onClientTickEvent(TickEvent.ClientTickEvent event) {
-        if (event.phase == TickEvent.Phase.END) DisplayControl.tick();
+    public static void onUnloadingLevel(Level level) {
+        if ( level.isClientSide()) DisplayControl.release();
     }
 
     // @SubscribeEvent

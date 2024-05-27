@@ -1,6 +1,6 @@
 package me.srrapero720.waterframes.mixin;
 
-import net.minecraftforge.fml.loading.FMLLoader;
+import net.fabricmc.loader.api.FabricLoader;
 import org.objectweb.asm.tree.ClassNode;
 import org.spongepowered.asm.mixin.extensibility.IMixinConfigPlugin;
 import org.spongepowered.asm.mixin.extensibility.IMixinInfo;
@@ -18,10 +18,10 @@ public class MixinPlugin implements IMixinConfigPlugin {
     @Override
     public boolean shouldApplyMixin(String target, String mixin) {
         if (mixin.endsWith("vp.VideoPlayerMixin")) {
-            return FMLLoader.getLoadingModList().getModFileById("videoplayer") != null;
+            return FabricLoader.getInstance().isModLoaded("videoplayer");
         }
         if (mixin.endsWith("self.VSCompat")) {
-            return FMLLoader.getLoadingModList().getModFileById("valkyrienskies") != null;
+            return FabricLoader.getInstance().isModLoaded("valkyrienskies");
         }
         return true;
     }

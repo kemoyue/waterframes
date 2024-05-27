@@ -12,6 +12,7 @@ import me.srrapero720.waterframes.WaterFrames;
 import me.srrapero720.waterframes.common.block.data.types.PositionHorizontal;
 import me.srrapero720.waterframes.common.block.data.types.PositionVertical;
 import me.srrapero720.waterframes.common.block.entity.DisplayTile;
+import me.srrapero720.waterframes.common.commands.arguments.EnumArgument;
 import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
 import net.minecraft.commands.CommandSourceStack;
@@ -27,7 +28,6 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.server.command.EnumArgument;
 import org.apache.logging.log4j.Marker;
 import org.apache.logging.log4j.MarkerManager;
 
@@ -189,11 +189,11 @@ public class WaterFramesCommand {
         );
 
         DEFAULT_INPUTS = new ItemInput[] {
-                new ItemInput(Holder.direct(WFRegistry.REMOTE_ITEM.get()), null),
-                new ItemInput(Holder.direct(WFRegistry.FRAME_ITEM.get()), null),
-                new ItemInput(Holder.direct(WFRegistry.PROJECTOR_ITEM.get()), null),
-                new ItemInput(Holder.direct(WFRegistry.TV_ITEM.get()), null),
-                new ItemInput(Holder.direct(WFRegistry.BIG_TV_ITEM.get()), null),
+                new ItemInput(Holder.direct(WFRegistry.REMOTE_ITEM), null),
+                new ItemInput(Holder.direct(WFRegistry.FRAME_ITEM), null),
+                new ItemInput(Holder.direct(WFRegistry.PROJECTOR_ITEM), null),
+                new ItemInput(Holder.direct(WFRegistry.TV_ITEM), null),
+                new ItemInput(Holder.direct(WFRegistry.BIG_TV_ITEM), null),
         };
 
         dispatcher.register(waterframes);

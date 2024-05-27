@@ -6,152 +6,91 @@ import me.srrapero720.waterframes.common.block.entity.*;
 import me.srrapero720.waterframes.common.commands.WaterFramesCommand;
 import me.srrapero720.waterframes.common.item.RemoteControl;
 import me.srrapero720.waterframes.common.network.packets.*;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
+import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderers;
-import net.minecraft.core.registries.Registries;
+import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
-import net.minecraft.server.packs.PackType;
-import net.minecraft.server.packs.repository.Pack;
-import net.minecraft.server.packs.repository.PackSource;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.*;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.event.BuildCreativeModeTabContentsEvent;
-import net.minecraftforge.client.event.EntityRenderersEvent;
-import net.minecraftforge.event.AddPackFindersEvent;
-import net.minecraftforge.event.RegisterCommandsEvent;
-import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.ModList;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
-import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
-import net.minecraftforge.fml.loading.FMLLoader;
-import net.minecraftforge.forgespi.locating.IModFile;
-import net.minecraftforge.registries.DeferredRegister;
-import net.minecraftforge.registries.ForgeRegistries;
-import net.minecraftforge.registries.RegistryObject;
-import net.minecraftforge.resource.PathPackResources;
-import org.jetbrains.annotations.NotNull;
 
-import java.nio.file.Path;
 import java.util.function.Supplier;
 
 import static me.srrapero720.waterframes.common.network.DisplayNetwork.*;
 import static me.srrapero720.waterframes.WaterFrames.*;
 
-@Mod.EventBusSubscriber(modid = ID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class WFRegistry {
-    public static final DeferredRegister<CreativeModeTab> TABS = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, ID);
-    public static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, ID);
-    public static final DeferredRegister<Block> BLOCKS =  DeferredRegister.create(ForgeRegistries.BLOCKS, ID);
-    public static final DeferredRegister<BlockEntityType<?>> TILES = DeferredRegister.create(ForgeRegistries.BLOCK_ENTITY_TYPES, ID);
 
     /* BLOCKS */
-    public static final RegistryObject<DisplayBlock>
-            FRAME = BLOCKS.register("frame", FrameBlock::new),
-            PROJECTOR = BLOCKS.register("projector", ProjectorBlock::new),
-            TV = BLOCKS.register("tv", TvBlock::new),
-            BIG_TV = BLOCKS.register("big_tv", BigTvBlock::new);
+    public static final DisplayBlock
+            FRAME = Registry.register(BuiltInRegistries.BLOCK, resloc("frame"), new FrameBlock()),
+            PROJECTOR = Registry.register(BuiltInRegistries.BLOCK, resloc("projector"), new ProjectorBlock()),
+            TV = Registry.register(BuiltInRegistries.BLOCK, resloc("tv"), new TvBlock()),
+            BIG_TV = Registry.register(BuiltInRegistries.BLOCK, resloc("big_tv"), new BigTvBlock());
 
     /* ITEMS */
-    public static final RegistryObject<Item>
-            REMOTE_ITEM = ITEMS.register("remote", () -> new RemoteControl(new Item.Properties())),
-            FRAME_ITEM = ITEMS.register("frame", () -> new BlockItem(FRAME.get(), prop())),
-            PROJECTOR_ITEM = ITEMS.register("projector", () -> new BlockItem(PROJECTOR.get(), prop())),
-            TV_ITEM = ITEMS.register("tv", () -> new BlockItem(TV.get(), prop())),
-            BIG_TV_ITEM = ITEMS.register("big_tv", () -> new BlockItem(BIG_TV.get(), prop()));
+    public static final Item
+            REMOTE_ITEM = Registry.register(BuiltInRegistries.ITEM, resloc("remote"), new RemoteControl(new Item.Properties())),
+            FRAME_ITEM = Registry.register(BuiltInRegistries.ITEM, resloc("frame"), new BlockItem(FRAME, prop())),
+            PROJECTOR_ITEM = Registry.register(BuiltInRegistries.ITEM, resloc("projector"), new BlockItem(PROJECTOR, prop())),
+            TV_ITEM = Registry.register(BuiltInRegistries.ITEM, resloc("tv"), new BlockItem(TV, prop())),
+            BIG_TV_ITEM = Registry.register(BuiltInRegistries.ITEM, resloc("big_tv"), new BlockItem(BIG_TV, prop()));
 
     /* TILES */
-    public static final RegistryObject<BlockEntityType<DisplayTile>>
-            TILE_FRAME = tile("frame", FrameTile::new, FRAME),
-            TILE_PROJECTOR = tile("projector", ProjectorTile::new, PROJECTOR),
-            TILE_TV = tile("tv", TvTile::new, TV),
-            TILE_BIG_TV = tile("big_tv", BigTvTile::new, BIG_TV);
+    public static final BlockEntityType<DisplayTile>
+            TILE_FRAME = Registry.register(BuiltInRegistries.BLOCK_ENTITY_TYPE, resloc("frame"), tile(FrameTile::new, () -> FRAME)),
+            TILE_PROJECTOR = Registry.register(BuiltInRegistries.BLOCK_ENTITY_TYPE, resloc("projector"), tile(ProjectorTile::new, () -> PROJECTOR)),
+            TILE_TV = Registry.register(BuiltInRegistries.BLOCK_ENTITY_TYPE, resloc("tv"), tile(TvTile::new, () -> TV)),
+            TILE_BIG_TV = Registry.register(BuiltInRegistries.BLOCK_ENTITY_TYPE, resloc("big_tv"), tile(BigTvTile::new, () -> BIG_TV));
 
     /* TABS */
-    public static final RegistryObject<CreativeModeTab> WATERTAB = TABS.register("tab", () -> new CreativeModeTab.Builder(CreativeModeTab.Row.TOP, 0)
-            .icon(() -> new ItemStack(FRAME.get()))
+    public static final CreativeModeTab WATERTAB = Registry.register(BuiltInRegistries.CREATIVE_MODE_TAB, resloc("tab"), FabricItemGroup.builder()
+            .icon(() -> new ItemStack(FRAME_ITEM))
             .title(Component.translatable("itemGroup.waterframes"))
-            .build()
-    );
+            .displayItems((itemDisplayParameters, output) -> {
+                output.accept(REMOTE_ITEM);
+                output.accept(FRAME_ITEM);
+                output.accept(PROJECTOR_ITEM);
+                output.accept(TV_ITEM);
+                output.accept(BIG_TV_ITEM);
+            })
+            .build());
 
-    private static RegistryObject<BlockEntityType<DisplayTile>> tile(String name, BlockEntityType.BlockEntitySupplier<DisplayTile> creator, Supplier<DisplayBlock> block) {
-        return TILES.register(name, () -> BlockEntityType.Builder.of(creator, block.get()).build(null));
+    private static BlockEntityType<DisplayTile> tile(BlockEntityType.BlockEntitySupplier<DisplayTile> creator, Supplier<DisplayBlock> block) {
+        return BlockEntityType.Builder.of(creator, block.get()).build(null);
     }
 
     private static Item.Properties prop() {
         return new Item.Properties().stacksTo(16).rarity(Rarity.EPIC);
     }
 
-    public static void init(IEventBus bus) {
-        BLOCKS.register(bus);
-        ITEMS.register(bus);
-        TILES.register(bus);
-        TABS.register(bus);
+    public static void init() {
+        CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> WaterFramesCommand.register(dispatcher));
+        NET.registerType(DataSyncPacket.class, DataSyncPacket::new);
+        NET.registerType(PermLevelPacket.class, PermLevelPacket::new);
+        NET.registerType(ActivePacket.class, ActivePacket::new);
+        NET.registerType(LoopPacket.class, LoopPacket::new);
+        NET.registerType(MutePacket.class, MutePacket::new);
+        NET.registerType(PausePacket.class, PausePacket::new);
+        NET.registerType(TimePacket.class, TimePacket::new);
+        NET.registerType(VolumePacket.class, VolumePacket::new);
+        NET.registerType(VolumeRangePacket.class, VolumeRangePacket::new);
     }
 
-    @SubscribeEvent
-    public static void registerCommands(RegisterCommandsEvent event) {
-        WaterFramesCommand.register(event.getDispatcher());
+    @Environment(EnvType.CLIENT)
+    public static void initClient() {
+        BlockEntityRenderers.register(TILE_FRAME, DisplayRenderer::new);
+        BlockEntityRenderers.register(TILE_PROJECTOR, DisplayRenderer::new);
+        BlockEntityRenderers.register(TILE_TV, DisplayRenderer::new);
+        BlockEntityRenderers.register(TILE_BIG_TV, DisplayRenderer::new);
     }
 
-    @Mod.EventBusSubscriber(modid = WaterFrames.ID, bus = Mod.EventBusSubscriber.Bus.MOD)
-    public static class ModEvents {
-        @SubscribeEvent
-        public static void onCreativeTabsLoading(BuildCreativeModeTabContentsEvent event) {
-            if (event.getTabKey() == WATERTAB.getKey()) {
-                event.accept(REMOTE_ITEM, CreativeModeTab.TabVisibility.PARENT_AND_SEARCH_TABS);
-                event.accept(FRAME_ITEM, CreativeModeTab.TabVisibility.PARENT_AND_SEARCH_TABS);
-                event.accept(PROJECTOR_ITEM, CreativeModeTab.TabVisibility.PARENT_AND_SEARCH_TABS);
-                event.accept(TV_ITEM, CreativeModeTab.TabVisibility.PARENT_AND_SEARCH_TABS);
-                event.accept(BIG_TV_ITEM, CreativeModeTab.TabVisibility.PARENT_AND_SEARCH_TABS);
-            }
-        }
-
-        @SubscribeEvent
-        public static void init(FMLCommonSetupEvent event) {
-            NET.registerType(DataSyncPacket.class, DataSyncPacket::new);
-            NET.registerType(PermLevelPacket.class, PermLevelPacket::new);
-            NET.registerType(ActivePacket.class, ActivePacket::new);
-            NET.registerType(LoopPacket.class, LoopPacket::new);
-            NET.registerType(MutePacket.class, MutePacket::new);
-            NET.registerType(PausePacket.class, PausePacket::new);
-            NET.registerType(TimePacket.class, TimePacket::new);
-            NET.registerType(VolumePacket.class, VolumePacket::new);
-            NET.registerType(VolumeRangePacket.class, VolumeRangePacket::new);
-        }
-
-        @OnlyIn(Dist.CLIENT)
-        @SubscribeEvent
-        public static void init(FMLClientSetupEvent e) {
-            if (WaterFrames.isInstalled("mr_stellarity") && (WFConfig.isDevMode())) {
-                throw new UnsupportedModException("mr_stellarity", "breaks picture rendering, overwrites the Minecraft core shaders and i can't do nothing to avoid that");
-            }
-        }
-
-        @SubscribeEvent
-        public static void registerResourcePacks(AddPackFindersEvent e) {
-            if (e.getPackType() == PackType.CLIENT_RESOURCES) {
-                IModFile modFile = ModList.get().getModFileById(ID).getFile();
-                e.addRepositorySource(consumer -> {
-                    Pack pack = Pack.readMetaAndCreate(ID + "/voxeloper", Component.literal("WaterFrames: Voxeloper"), false, id -> new ModPackResources(id, modFile, "resourcepacks/wf_voxeloper"), PackType.CLIENT_RESOURCES, Pack.Position.TOP, PackSource.BUILT_IN);
-                    if (pack != null) {
-                        consumer.accept(pack);
-                    }
-                });
-            }
-        }
-
-        @OnlyIn(Dist.CLIENT)
-        @SubscribeEvent
-        public static void registerTileRenderer(EntityRenderersEvent.RegisterRenderers e) {
-            BlockEntityRenderers.register(TILE_FRAME.get(), DisplayRenderer::new);
-            BlockEntityRenderers.register(TILE_PROJECTOR.get(), DisplayRenderer::new);
-            BlockEntityRenderers.register(TILE_TV.get(), DisplayRenderer::new);
-            BlockEntityRenderers.register(TILE_BIG_TV.get(), DisplayRenderer::new);
-        }
+    public static ResourceLocation resloc(String name) {
+        return new ResourceLocation(ID, name);
     }
 
     public static class UnsupportedModException extends UnsupportedOperationException {
@@ -172,23 +111,23 @@ public class WFRegistry {
         }
     }
 
-    public static class ModPackResources extends PathPackResources {
-        protected final IModFile modFile;
-        protected final String sourcePath;
-
-        public ModPackResources(String name, IModFile modFile, String sourcePath) {
-            super(name, true, modFile.findResource(sourcePath));
-            this.modFile = modFile;
-            this.sourcePath = sourcePath;
-        }
-
-        @NotNull
-        protected Path resolve(String... paths) {
-            String[] allPaths = new String[paths.length + 1];
-            allPaths[0] = this.sourcePath;
-            System.arraycopy(paths, 0, allPaths, 1, paths.length);
-            return this.modFile.findResource(allPaths);
-        }
-    }
+//    public static class ModPackResources extends PathPackResources {
+//        protected final IModFile modFile;
+//        protected final String sourcePath;
+//
+//        public ModPackResources(String name, IModFile modFile, String sourcePath) {
+//            super(name, true, modFile.findResource(sourcePath));
+//            this.modFile = modFile;
+//            this.sourcePath = sourcePath;
+//        }
+//
+//        @NotNull
+//        protected Path resolve(String... paths) {
+//            String[] allPaths = new String[paths.length + 1];
+//            allPaths[0] = this.sourcePath;
+//            System.arraycopy(paths, 0, allPaths, 1, paths.length);
+//            return this.modFile.findResource(allPaths);
+//        }
+//    }
 
 }
