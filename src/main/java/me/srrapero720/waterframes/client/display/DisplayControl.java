@@ -106,7 +106,7 @@ public class DisplayControl {
     }
 
     public static void onUnloadingLevel(Level level) {
-        if ( level.isClientSide()) DisplayControl.release();
+        if (level.isClientSide()) DisplayControl.release();
     }
 
     // @SubscribeEvent

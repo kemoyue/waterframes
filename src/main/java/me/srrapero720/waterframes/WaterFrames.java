@@ -51,5 +51,5 @@ public class WaterFrames implements ModInitializer {
     }
 
     @Environment(EnvType.CLIENT)
-    public static float deltaFrames() { return Minecraft.getInstance().isPaused() ? 1.0F : Minecraft.getInstance().getFrameTime(); }
+    public static float deltaFrames() { return Minecraft.getInstance().isPaused() ? 1.0F : Minecraft.getInstance().getTimer().getGameTimeDeltaPartialTick(false); }
 }

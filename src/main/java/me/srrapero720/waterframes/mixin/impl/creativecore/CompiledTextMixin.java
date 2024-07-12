@@ -4,6 +4,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import me.srrapero720.waterframes.common.helpers.ScalableText;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
+import net.minecraft.client.gui.GuiGraphics;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -18,8 +19,8 @@ public class CompiledTextMixin implements ScalableText {
 
     @Inject(method = "render", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/vertex/PoseStack;pushPose()V", ordinal = 0, shift = At.Shift.AFTER))
     @Environment(EnvType.CLIENT)
-    public void render(PoseStack pose, CallbackInfo ci) {
-        pose.scale(wf$scale, wf$scale, wf$scale);
+    public void render(GuiGraphics graphics, CallbackInfo ci) {
+        graphics.pose().scale(wf$scale, wf$scale, wf$scale);
     }
 
     @Override
